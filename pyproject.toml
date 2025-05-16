@@ -1,7 +1,9 @@
+[tool.ruff]
 line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "B","I"]
+exclude = ["constants/imports.py"]
 
 [tool.ruff.format]
 quote-style = "double"

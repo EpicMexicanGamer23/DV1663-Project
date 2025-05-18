@@ -1,4 +1,4 @@
-from constants.imports import gen
+import src.gen as gen
 
 
 class Course:
@@ -8,14 +8,16 @@ class Course:
 	subjects: list[tuple[str, str]]
 	study_period: int
 	teaching_language: str
+	requirement_courses: list["Course"]
 
 	def __init__(self, _subjects: list[tuple[str, str]], _level: str, _sp: 1, _tl: str):
 		self.subjects = _subjects
 		self.education_level = _level
 		self.id = self.subjects[0][1] + next(gen.id_gen)
-		self.credits = gen.credit_gen.send(self.education_level)
+		self.credits = gen.gen_course_credits(self.education_level)
 		self.study_period = _sp
 		self.teaching_language = _tl
+		self.requirement_courses = []
 
 	def __str__(self):
 		out = "Course:"
@@ -25,7 +27,14 @@ class Course:
 		out += "\n\tSubject: "
 		for subject in self.subjects:
 			out += subject[0]
-			out += " "
+			out += ", "
 		out += f"\n\tStudy Period: {self.study_period}"
 		out += f"\n\tTeaching Language: {self.teaching_language}"
+		out += "\n\tRequirement Courses: "
+		for course in self.requirement_courses:
+			out += course.id
+			out += ", "
 		return out
+
+	def set_requirement_courses(self, courses: list):
+		self.requirement_courses = courses

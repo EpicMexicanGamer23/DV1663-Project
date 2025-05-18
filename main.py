@@ -1,10 +1,10 @@
-from constants.imports import Course
-from constants.variables import COURSE_SUBJECTS, EDUCATION_LEVELS
+import src.gen as gen
 
 
 def main():
-	my_course = Course([COURSE_SUBJECTS[0]], EDUCATION_LEVELS[0], 1, "Swedish")
-	print(my_course)
+	my_courses = gen.generate_100_courses()
+	for course in my_courses:
+		print(course)
 
 
 if __name__ == "__main__":

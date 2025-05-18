@@ -1,6 +1,6 @@
 COURSE_SUBJECTS = [
 	("Mathematics", "MA"),
-	("Phystics", "FY"),
+	("Physics", "FY"),
 	("Technology", "TE"),
 	("Economics", "IY"),
 	("Computer Science", "PA"),
@@ -12,3 +12,6 @@ COURSE_SUBJECTS = [
 ]
 
 EDUCATION_LEVELS = ["First-cycle", "Second-cycle"]
+
+
+LANGUAGES = ["Swedish", "English"]

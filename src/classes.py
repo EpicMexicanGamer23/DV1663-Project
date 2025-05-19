@@ -36,5 +36,18 @@ class Course:
 			out += ", "
 		return out
 
+	def get_values(self):
+		"""
+		Gets all values as a tuples except subjects and requirement courses\n
+		Return (id, credits, education_level, study_period, teaching_language)
+		"""
+		return (self.id, self.credits, self.education_level, self.study_period, self.teaching_language)
+	
+	def get_subjects(self):
+		return self.subjects
+	
+	def get_requirement_courses(self):
+		return self.requirement_courses
+	
 	def set_requirement_courses(self, courses: list):
 		self.requirement_courses = courses

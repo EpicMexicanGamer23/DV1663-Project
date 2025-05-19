@@ -1,6 +1,8 @@
-import src.gen as gen
-import mysql.connector as mysql	
 from getpass import getpass
+
+import mysql.connector as mysql
+import src.gen as gen
+from src.classes import Course
 
 conn : mysql.MySQLConnection = None
 username : str
@@ -128,6 +130,29 @@ def drop_tables():
 	cursor.close()
 	print("DROPPED ALL TABLES")
 
+def fill_course_table():
+	global conn
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Courses")
+	query = cursor.fetchall()
+	if(len(query) != 0):
+		return
+	generated_coures : list["Course"] = gen.generate_100_courses()
+	for course in generated_coures:
+		data = course.get_values()
+		cursor.execute("INSERT INTO Courses(CourseID, ETCSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)",data)
+		subjects = course.get_subjects()
+		for subject in subjects:
+			sub_data = (data[0], subject[0])
+			cursor.execute("INSERT INTO CourseSubject(CourseID, Subject) VALUES(%s, %s)", sub_data)
+		req_courses : list["Course"] = course.get_requirement_courses()
+		for req_course in req_courses:
+			req_data = (data[0], req_course.id)
+			cursor.execute("INSERT INTO CoursesRequired(CourseID, RequirementCourse) VALUES(%s, %s)", req_data)
+	conn.commit()
+	cursor.close()
+	return
+
 def main():
 	global conn
 	global username
@@ -147,7 +172,7 @@ def main():
 	print("CONNECTED")
 	init_database()
 	init_tables()
-	# drop_tables()
+	fill_course_table()
 	conn.close()
 
 if __name__ == "__main__":

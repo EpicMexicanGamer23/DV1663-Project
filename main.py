@@ -3,6 +3,7 @@ from getpass import getpass
 import mysql.connector as mysql
 import src.gen as gen
 from src.classes import Course
+from src.CLI import Interface
 
 conn : mysql.MySQLConnection = None
 username : str
@@ -149,7 +150,7 @@ def fill_course_table():
 		for req_course in req_courses:
 			req_data = (data[0], req_course.id)
 			cursor.execute("INSERT INTO CoursesRequired(CourseID, RequirementCourse) VALUES(%s, %s)", req_data)
-	conn.commit()
+	conn.commit()	#have to commit to save added value in table
 	cursor.close()
 	return
 
@@ -173,6 +174,8 @@ def main():
 	init_database()
 	init_tables()
 	fill_course_table()
+	interface = Interface()
+	interface.login()
 	conn.close()
 
 if __name__ == "__main__":

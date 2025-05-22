@@ -36,7 +36,6 @@ class Interface:
 		return result
 
 	def command_print(self, current_text):
-		print("\nAvailable commands: ")
 		for index, text in enumerate(current_text):
 			print(f"\t{index}. {text}")
 
@@ -66,6 +65,7 @@ class Interface:
 							break
 					if not name_in_use:
 						db_commands.create_student(username)
+						students = db_commands.get_students()
 
 	def main_interface(self):
 		while True:

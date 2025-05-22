@@ -3,27 +3,22 @@ from getpass import getpass
 import mysql.connector as mysql
 import src.gen as gen
 from src.classes import Course, Program
+from src.CLI import Interface
 
-conn: mysql.MySQLConnection = None
-username: str
-mysqlpassword = None
+import constants.variables as vars
 
 
 def init_database():
-	global conn
-	global mysqlpassword
-	global username
-	cursor = conn.cursor()
-	cursor.execute("CREATE DATABASE IF NOT EXISTS `dv1663_group_12`")
+	cursor = vars.conn.cursor()
+	cursor.execute("CREATE DATABASE IF NOT EXISTS dv1663_group_12")
 	cursor.close()
-	conn.close()
-	conn = mysql.connect(host="localhost", user=username, password=mysqlpassword, database="dv1663_group_12")
-	conn.commit()
+	vars.conn.close()
+	vars.conn = mysql.connect(host="localhost", user=vars.username, password=vars.mysqlpassword, database="dv1663_group_12")
+	vars.conn.commit()
 
 
 def init_tables():
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 
 	table_courses = """CREATE TABLE IF NOT EXISTS `Courses` (
 		CourseID VARCHAR(10) NOT NULL,
@@ -84,9 +79,9 @@ def init_tables():
 	"""
 
 	table_students = """CREATE TABLE IF NOT EXISTS `Students` (
-		StudentID INT NOT NULL,
+		StudentID INT NOT NULL AUTO_INCREMENT,
 		Name VARCHAR(100) NOT NULL,
-		ProgramID INT NOT NULL,
+		ProgramID INT,
 
 		FOREIGN KEY (ProgramID) REFERENCES Programs(ProgramID),
 		PRIMARY KEY (StudentID)
@@ -114,13 +109,12 @@ def init_tables():
 	cursor.execute(table_program_courses)
 	cursor.execute(table_students)
 	cursor.execute(table_student_enrollment)
-	conn.commit()
+	vars.conn.commit()
 	cursor.close()
 
 
 def drop_tables():
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 	cursor.execute("DROP TABLE IF EXISTS `CoursesRequired`;")
 	cursor.execute("DROP TABLE IF EXISTS `CourseSubject`;")
 	cursor.execute("DROP TABLE IF EXISTS `SubjectRequirements`;")
@@ -129,14 +123,13 @@ def drop_tables():
 	cursor.execute("DROP TABLE IF EXISTS `Courses`;")
 	cursor.execute("DROP TABLE IF EXISTS `Students`;")
 	cursor.execute("DROP TABLE IF EXISTS `Programs`;")
-	conn.commit()
+	vars.conn.commit()
 	cursor.close()
 	print("DROPPED ALL TABLES")
 
 
 def insert_course(course: "Course"):
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 	# Insert the course information into the Course Table
 	data = course.get_values()
 	cursor.execute("INSERT INTO Courses(CourseID, ETCSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)", data)
@@ -151,13 +144,12 @@ def insert_course(course: "Course"):
 		req_data = (data[0], req_course.id)
 		cursor.execute("INSERT INTO CoursesRequired(CourseID, RequirementCourse) VALUES(%s, %s)", req_data)
 
-	conn.commit()
+	vars.conn.commit()
 	cursor.close()
 
 
 def insert_program(program: "Program"):
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 	# Insert the program information into the Program Table
 	cursor.execute("INSERT INTO Programs(ProgramID, ProgramCredits) VALUES(%s,%s)", program.get_values())
 	courses = program.get_courses()
@@ -167,52 +159,52 @@ def insert_program(program: "Program"):
 		# Insert the course into the ProgramCourses Table
 		cursor.execute("INSERT INTO ProgramCourses(ProgramID, CourseID) VALUES(%s, %s)", data)
 
-	conn.commit()
+	vars.conn.commit()
 	cursor.close()
 
 
 def fill_course_table():
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 	cursor.execute("SELECT * FROM Courses")
 	query = cursor.fetchall()
 	if len(query) != 0:
+		cursor.close()
 		return
 	generated_coures: list["Course"] = gen.generate_100_courses()
 	for course in generated_coures:
 		insert_course(course)
-	conn.commit()
+	vars.conn.commit()
 	cursor.close()
 	return
 
 
 def fill_program_table(program_amount: int):
-	global conn
-	cursor = conn.cursor()
+	cursor = vars.conn.cursor()
 	cursor.execute("SELECT * FROM Programs")
 	query = cursor.fetchall()
 	if len(query) != 0:
+		cursor.close()
 		return
 	for _ in range(program_amount):
 		prog: "Program" = gen.generate_program()
 		insert_program(prog)
+	vars.conn.commit()
+	cursor.close()
 	return
 
 
 def main():
-	global conn
-	global username
-	global mysqlpassword
 	connected = False
 	while not connected:
-		username = input("MYSQL Server User: ")
-		mysqlpassword = getpass("MYSQL Server Password: ")
+		vars.username = input("MYSQL Server User: ")
+		vars.mysqlpassword = getpass("MYSQL Server Password: ")
+
 		try:
-			conn = mysql.connect(host="localhost", user=username, password=mysqlpassword)
+			vars.conn = mysql.connect(host="localhost", user=vars.username, password=vars.mysqlpassword)
 		except Exception:
 			print("Connection failed, make sure the MYSQL Server is active, and the password is correct")
 			continue
-		if conn.is_connected():
+		if vars.conn.is_connected():
 			connected = True
 
 	print("CONNECTED")
@@ -220,8 +212,10 @@ def main():
 	init_tables()
 	# drop_tables()
 	# fill_course_table()
-	fill_program_table(4)
-	conn.close()
+	# fill_program_table(4)
+	interface = Interface()
+	interface.login()
+	vars.conn.close()
 
 
 if __name__ == "__main__":

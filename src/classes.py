@@ -69,3 +69,14 @@ class Program:
 
 	def get_courses(self):
 		return self.course_list
+
+
+class Student:
+	StudentID: int
+	Name: str
+	ProgramID: int
+
+	def __init__(self, sql_tuple: tuple):
+		self.StudentID = sql_tuple[0]
+		self.Name = sql_tuple[1]
+		self.ProgramID = sql_tuple[2]

@@ -1,3 +1,5 @@
+import mysql.connector as mysql
+
 COURSE_SUBJECTS = [
 	("Mathematics", "MA"),
 	("Physics", "FY"),
@@ -15,3 +17,9 @@ EDUCATION_LEVELS = ["First-cycle", "Second-cycle"]
 
 
 LANGUAGES = ["Swedish", "English"]
+
+# variables:
+# conn: mysql.MySQLConnection = None
+conn = None
+username: str = None
+mysqlpassword = None

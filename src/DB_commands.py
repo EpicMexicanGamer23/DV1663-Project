@@ -14,9 +14,13 @@ def get_students():
 	return student_list
 
 
-def create_student(username):
+def create_student(username: str):
 	cursor = vars.conn.cursor()
-	cursor.execute("INSERT INTO Students (Name) VALUES(%s)", username)
+	username = username.lower()
+	cursor.execute("INSERT INTO Students(Name) VALUES(%s)", (username,))
+	vars.conn.commit()
+	cursor.close()
+	return
 
 
 def get_student_enrollment(student_ID):

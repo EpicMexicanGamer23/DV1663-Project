@@ -2,7 +2,7 @@ from getpass import getpass
 
 import mysql.connector as mysql
 import src.gen as gen
-from src.classes import Course
+from src.classes import Course, Program
 from src.CLI import Interface
 
 import constants.variables as vars
@@ -10,7 +10,7 @@ import constants.variables as vars
 
 def init_database():
 	cursor = vars.conn.cursor()
-	cursor.execute("CREATE DATABASE IF NOT EXISTS `dv1663_group_12`")
+	cursor.execute("CREATE DATABASE IF NOT EXISTS dv1663_group_12")
 	cursor.close()
 	vars.conn.close()
 	vars.conn = mysql.connect(host="localhost", user=vars.username, password=vars.mysqlpassword, database="dv1663_group_12")
@@ -128,25 +128,67 @@ def drop_tables():
 	print("DROPPED ALL TABLES")
 
 
+def insert_course(course: "Course"):
+	cursor = vars.conn.cursor()
+	# Insert the course information into the Course Table
+	data = course.get_values()
+	cursor.execute("INSERT INTO Courses(CourseID, ETCSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)", data)
+	# Inser the subjects for the course in the CourseSubject Table
+	subjects = course.get_subjects()
+	for subject in subjects:
+		sub_data = (data[0], subject[0])
+		cursor.execute("INSERT INTO CourseSubject(CourseID, Subject) VALUES(%s, %s)", sub_data)
+	# Inser the requirement courses into the CoursesRequired Table
+	req_courses: list["Course"] = course.get_requirement_courses()
+	for req_course in req_courses:
+		req_data = (data[0], req_course.id)
+		cursor.execute("INSERT INTO CoursesRequired(CourseID, RequirementCourse) VALUES(%s, %s)", req_data)
+
+	vars.conn.commit()
+	cursor.close()
+
+
+def insert_program(program: "Program"):
+	cursor = vars.conn.cursor()
+	# Insert the program information into the Program Table
+	cursor.execute("INSERT INTO Programs(ProgramID, ProgramCredits) VALUES(%s,%s)", program.get_values())
+	courses = program.get_courses()
+	for course in courses:
+		data = (program.id, course.id)
+		insert_course(course)  # Inser the course into the Course Table
+		# Insert the course into the ProgramCourses Table
+		cursor.execute("INSERT INTO ProgramCourses(ProgramID, CourseID) VALUES(%s, %s)", data)
+
+	vars.conn.commit()
+	cursor.close()
+
+
 def fill_course_table():
 	cursor = vars.conn.cursor()
 	cursor.execute("SELECT * FROM Courses")
 	query = cursor.fetchall()
 	if len(query) != 0:
+		cursor.close()
 		return
 	generated_coures: list["Course"] = gen.generate_100_courses()
 	for course in generated_coures:
-		data = course.get_values()
-		cursor.execute("INSERT INTO Courses(CourseID, ETCSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)", data)
-		subjects = course.get_subjects()
-		for subject in subjects:
-			sub_data = (data[0], subject[0])
-			cursor.execute("INSERT INTO CourseSubject(CourseID, Subject) VALUES(%s, %s)", sub_data)
-		req_courses: list["Course"] = course.get_requirement_courses()
-		for req_course in req_courses:
-			req_data = (data[0], req_course.id)
-			cursor.execute("INSERT INTO CoursesRequired(CourseID, RequirementCourse) VALUES(%s, %s)", req_data)
-	vars.conn.commit()  # have to commit to save added value in table
+		insert_course(course)
+	vars.conn.commit()
+	cursor.close()
+	return
+
+
+def fill_program_table(program_amount: int):
+	cursor = vars.conn.cursor()
+	cursor.execute("SELECT * FROM Programs")
+	query = cursor.fetchall()
+	if len(query) != 0:
+		cursor.close()
+		return
+	for _ in range(program_amount):
+		prog: "Program" = gen.generate_program()
+		insert_program(prog)
+	vars.conn.commit()
 	cursor.close()
 	return
 
@@ -168,10 +210,11 @@ def main():
 	print("CONNECTED")
 	init_database()
 	init_tables()
-	fill_course_table()
+	# drop_tables()
+	# fill_course_table()
+	# fill_program_table(4)
 	interface = Interface()
 	interface.login()
-	# drop_tables()
 	vars.conn.close()
 
 

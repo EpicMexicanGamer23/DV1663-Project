@@ -22,7 +22,7 @@ class Interface:
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
 
-	def checkInput(self, temp):
+	def checkInput(self, temp, temp_list):
 		result = True
 		try:
 			temp = int(temp)
@@ -30,7 +30,7 @@ class Interface:
 			print("Input a number for command usage.")
 			result = False
 
-		if temp >= len(self.main_text):
+		if temp >= len(temp_list):
 			print("Input number out of range (not an available command.)")
 			result = False
 		return result
@@ -46,27 +46,26 @@ class Interface:
 		while True:
 			self.command_print(self.login_text)
 			user_input = input("Input command: ")
-			if not self.checkInput(user_input):
-				continue
-			if self.login_text[int(user_input) == "Exit"]:
-				break
+			if self.checkInput(user_input, self.login_text):
+				if int(user_input) == 2:  # Exit
+					break
+				username = input("Input Username:")
+				if int(user_input) == 0:  # login
+					for student in students:
+						if student.Name == username:
+							self.main_interface()
+					if students == []:
+						print("User login not found.")
 
-			username = input("Input Username:")
-
-			if int(user_input) == 1:  # login
-				for student in students:
-					if student.Name == username:
-						self.current_student_id = student.StudentID
-						self.main_interface()
-				if students == []:
-					print("User login not found.")
-
-			elif int(user_input) == 2:  # Create user
-				for student in students:
-					if student.Name == username:
-						print("Username already in use.")
-						continue
-				db_commands.create_student(username)
+				elif int(user_input) == 1:  # Create user
+					name_in_use = False
+					for student in students:
+						if student.Name == username.lower():
+							print("Username already in use.")
+							name_in_use = True
+							break
+					if not name_in_use:
+						db_commands.create_student(username)
 
 	def main_interface(self):
 		while True:
@@ -74,13 +73,13 @@ class Interface:
 
 			command = input("Input given: ")
 
-			if not self.checkInput(command):
+			if not self.checkInput(command, self.main_text):
 				continue
-			if self.main_text[command] == "Exit":  # exit
+			if self.main_text[int(command)] == "Exit":  # exit
 				break
 
 			for index, _ in enumerate(self.main_text):
-				if command == index:
+				if int(command) == index:
 					self.main_func[index]()
 					continue
 
@@ -90,13 +89,13 @@ class Interface:
 
 			command = input("Input given: ")
 
-			if not self.checkInput(command):
+			if not self.checkInput(command, self.all_courses_text):
 				continue
-			if self.all_courses_text[command] == "Exit":  # exit
+			if self.all_courses_text[int(command)] == "Exit":  # exit
 				break
 
 			for index, _ in enumerate(self.all_courses_text):
-				if command == index:
+				if int(command) == index:
 					self.all_courses_func[index]()
 					continue
 
@@ -106,13 +105,13 @@ class Interface:
 
 			command = input("Input given: ")
 
-			if not self.checkInput(command):
+			if not self.checkInput(command, self.all_programs_text):
 				continue
-			if self.all_programs_text[command] == "Exit":  # exit
+			if self.all_programs_text[int(command)] == "Exit":  # exit
 				break
 
 			for index, _ in enumerate(self.all_programs_text):
-				if command == index:
+				if int(command) == index:
 					self.all_programs_func[index]()
 					continue
 
@@ -122,13 +121,13 @@ class Interface:
 
 			command = input("Input given: ")
 
-			if not self.checkInput(command):
+			if not self.checkInput(command, self.filters_text):
 				continue
-			if self.filters_text[command] == "Exit":  # exit
+			if self.filters_text[int(command)] == "Exit":  # exit
 				break
 
 			for index, _ in enumerate(self.filters_text):
-				if command == index:
+				if int(command) == index:
 					self.filters_func[index]()
 					continue
 

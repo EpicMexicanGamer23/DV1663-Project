@@ -1,4 +1,5 @@
 import src.gen as gen
+import random as rand
 
 
 class Course:
@@ -51,6 +52,23 @@ class Course:
 
 	def set_requirement_courses(self, courses: list):
 		self.requirement_courses = courses
+
+
+class Program:
+	id: int
+	credits: int
+	course_list: list["Course"]
+
+	def __init__(self):
+		self.id = next(gen.prog_gen)
+		self.credits = [180, 300][rand.randint(0, 1)]
+		self.course_list = []
+
+	def get_values(self):
+		return (self.id, self.credits)
+
+	def get_courses(self):
+		return self.course_list
 
 
 class Student:

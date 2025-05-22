@@ -7,17 +7,17 @@ import src.DB_commands as db_commands
 
 class Interface:
 	def __init__(self):
-		self.current_student = None
+		self.current_student_id = None
 		self.login_text = ["Login", "Create User", "Exit"]
 
 		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Courses Selected", "Exit"]
 		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selected_courses]
 
 		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Exit"]
-		self.all_courses_func = [self.add_course, self.remove_course, self.view_all_courses]
+		self.all_courses_func = [self.add_course_to_student, self.remove_course_from_student, self.view_all_courses]
 
 		self.all_programs_text = ["Add Program", "Remove Program", "View All Programs", "Exit"]
-		self.all_programs_func = [self.add_program, self.remove_program, self.view_all_programs]
+		self.all_programs_func = [self.add_program_to_student, self.remove_program_from_student, self.view_all_programs]
 
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
@@ -46,26 +46,27 @@ class Interface:
 		while True:
 			self.command_print(self.login_text)
 			user_input = input("Input command: ")
-			if self.checkInput(user_input):
-				students = []
-				if self.login_text[int(user_input) == "Exit"]:
-					break
+			if not self.checkInput(user_input):
+				continue
+			if self.login_text[int(user_input) == "Exit"]:
+				break
 
-				username = input("Input Username:")
+			username = input("Input Username:")
 
-				if int(user_input) == 1:  # login
-					for student in students:
-						if student.Name == username:
-							self.main_interface()
-					if students == []:
-						print("User login not found.")
+			if int(user_input) == 1:  # login
+				for student in students:
+					if student.Name == username:
+						self.current_student_id = student.StudentID
+						self.main_interface()
+				if students == []:
+					print("User login not found.")
 
-				elif int(user_input) == 2:  # Create user
-					for student in students:
-						if student.Name == username:
-							print("Username already in use.")
-							continue
-					db_commands.create_student(username)
+			elif int(user_input) == 2:  # Create user
+				for student in students:
+					if student.Name == username:
+						print("Username already in use.")
+						continue
+				db_commands.create_student(username)
 
 	def main_interface(self):
 		while True:
@@ -132,21 +133,31 @@ class Interface:
 					continue
 
 	def view_selected_courses(self):
+		selected_courses = db_commands.get_student_enrollment(self.current_student_id)
+
+	def add_course_to_student(self):
+		while True:
+			course_id = input("Input CourseID (q to stop): ")
+			if course_id.lower() == "q":
+				break
+
+			course_list = db_commands.get_courses()
+			for course in course_list:
+				if course.id == course_id:
+					db_commands.add_course_to_student(self.current_student_id, course_id)
+
+	def remove_course_from_student(self):
 		pass
 
-	def add_course(self):
+	def view_all_courses(student_ID):
 		pass
 
-	def remove_course(self):
+		# SELECT * FROM Courses LEFT JOIN (SELECT * FROM StudentEnrollment WHERE StudentID = current_studentID;) AS SE ON Courses.CourseID = SE.CourseID ORDER BY SE.StudentID DESC
+
+	def add_program_to_student(self):
 		pass
 
-	def view_all_courses(self):
-		pass
-
-	def add_program(self):
-		pass
-
-	def remove_program(self):
+	def remove_program_from_student(self):
 		pass
 
 	def view_all_programs(self):

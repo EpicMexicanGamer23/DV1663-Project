@@ -42,12 +42,23 @@ class Course:
 		Return (id, credits, education_level, study_period, teaching_language)
 		"""
 		return (self.id, self.credits, self.education_level, self.study_period, self.teaching_language)
-	
+
 	def get_subjects(self):
 		return self.subjects
-	
+
 	def get_requirement_courses(self):
 		return self.requirement_courses
-	
+
 	def set_requirement_courses(self, courses: list):
 		self.requirement_courses = courses
+
+
+class Student:
+	StudentID: int
+	Name: str
+	ProgramID: int
+
+	def __init__(self, sql_tuple: tuple):
+		self.StudentID = sql_tuple[0]
+		self.Name = sql_tuple[1]
+		self.ProgramID = sql_tuple[2]

@@ -59,10 +59,13 @@ class Program:
 	credits: int
 	course_list: list["Course"]
 
-	def __init__(self):
-		self.id = next(gen.prog_gen)
-		self.credits = [180, 300][rand.randint(0, 1)]
+	def __init__(self, sql_tuple):
+		self.id = sql_tuple[0]
+		self.credits = sql_tuple[1]
 		self.course_list = []
+
+	def set_course_list(self, _course_list):
+		self.course_list = _course_list
 
 	def get_values(self):
 		return (self.id, self.credits)

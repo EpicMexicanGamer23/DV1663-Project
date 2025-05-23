@@ -20,6 +20,6 @@ LANGUAGES = ["Swedish", "English"]
 
 # variables:
 # conn: mysql.MySQLConnection = None
-conn = None
+conn: mysql.MySQLConnection = None
 username: str = None
 mysqlpassword = None

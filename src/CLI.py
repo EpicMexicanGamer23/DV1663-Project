@@ -1,7 +1,7 @@
 """Command Line Interface (to get database)"""
 
-from src.classes import Course, Student
-from constants.variables import conn
+from src.classes import Course, Student, Program
+import constants.variables as cvars
 import src.DB_commands as db_commands
 
 
@@ -22,16 +22,25 @@ class Interface:
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
 
+	def set_student_id(self, _student_id: int):
+		self.current_student_id = _student_id
+
 	def checkInput(self, temp, temp_list):
+		result = self.int_convert_check(temp)
+		if result is False:
+			return False
+		if int(temp) >= len(temp_list):
+			print("Input number out of range (not an available command.)")
+			result = False
+		return result
+
+	def int_convert_check(self, value) -> bool:
+		"""Returns true if conversion is possible otherwise false"""
 		result = True
 		try:
-			temp = int(temp)
+			value = int(value)
 		except Exception:
 			print("Input a number for command usage.")
-			result = False
-
-		if temp >= len(temp_list):
-			print("Input number out of range (not an available command.)")
 			result = False
 		return result
 
@@ -53,6 +62,7 @@ class Interface:
 				if int(user_input) == 0:  # login
 					for student in students:
 						if student.Name == username:
+							self.set_student_id(student.StudentID)
 							self.main_interface()
 					if students == []:
 						print("User login not found.")
@@ -66,6 +76,7 @@ class Interface:
 							break
 					if not name_in_use:
 						db_commands.create_student(username)
+						students = db_commands.get_students()
 
 	def main_interface(self):
 		while True:
@@ -154,7 +165,24 @@ class Interface:
 		# SELECT * FROM Courses LEFT JOIN (SELECT * FROM StudentEnrollment WHERE StudentID = current_studentID;) AS SE ON Courses.CourseID = SE.CourseID ORDER BY SE.StudentID DESC
 
 	def add_program_to_student(self):
-		pass
+		current_student = db_commands.get_student(self.current_student_id)
+		programs: list["Program"] = db_commands.get_programs()
+		valid_program = False
+		while not valid_program:
+			user_input = input("Set program (q to exit): ")
+			if user_input == "q":
+				return
+			if not self.int_convert_check(user_input):
+				continue
+			if any(program.id == int(user_input) for program in programs):
+				valid_program = True
+			else:
+				print(f"There is no program {user_input}")
+		cursor = cvars.conn.cursor()
+		cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (int(user_input), self.current_student_id))
+		cvars.conn.commit()
+		cursor.close()
+		return
 
 	def remove_program_from_student(self):
 		pass
@@ -174,12 +202,7 @@ class Interface:
 	def courses_selected_view(self):
 		# program chosen: program_2 || [NO CHOSEN PROGRAM]
 		# Courses \nMa1448 [ECST, Subjects]\n, ...
-		cursor = self.conn.cursor()
-
-		cursor.execute(
-			"SELECT * FROM ´StudentEnrollment´ WHERE StudentID = %s",
-		)
-		return_value = cursor.fetchall()
+		pass
 
 
 def main():

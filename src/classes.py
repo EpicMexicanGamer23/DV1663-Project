@@ -11,14 +11,14 @@ class Course:
 	teaching_language: str
 	requirement_courses: list["Course"]
 
-	def __init__(self, _subjects: list[tuple[str, str]], _level: str, _sp: 1, _tl: str):
+	def __init__(self, _id: str, _cr: int, _level: str, _sp: 1, _tl: str, _subjects: list[tuple[str, str]], _rc: list["Course"]):
 		self.subjects = _subjects
 		self.education_level = _level
-		self.id = self.subjects[0][1] + next(gen.id_gen)
-		self.credits = gen.gen_course_credits(self.education_level)
+		self.id = _id
+		self.credits = _cr
 		self.study_period = _sp
 		self.teaching_language = _tl
-		self.requirement_courses = []
+		self.requirement_courses = _rc
 
 	def __str__(self):
 		out = "Course:"
@@ -35,7 +35,7 @@ class Course:
 		for course in self.requirement_courses:
 			out += course.id
 			out += ", "
-		return out
+		return out  # nonetype is not iterable
 
 	def get_values(self):
 		"""

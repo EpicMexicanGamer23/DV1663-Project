@@ -17,6 +17,32 @@ def init_database():
 	vars.conn.commit()
 
 
+def init_views():
+	cursor = vars.conn.cursor()
+
+	course_subjects = """CREATE OR REPLACE VIEW view_course_subjects AS
+	SELECT 
+		CourseID, 
+		GROUP_CONCAT(Subject SEPARATOR ', ') AS Subjects
+		FROM 
+			CourseSubject
+		GROUP BY 
+			CourseID;"""
+
+	course_requirements = """CREATE OR REPLACE VIEW view_course_requirements AS
+	SELECT
+		CourseID,
+		GROUP_CONCAT(RequirementCourse SEPARATOR ', ') AS Requirements
+		FROM
+			coursesrequired
+		GROUP BY
+			CourseID;"""
+	cursor.execute(course_subjects)
+	cursor.execute(course_requirements)
+	vars.conn.commit()
+	cursor.close()
+
+
 def init_tables():
 	cursor = vars.conn.cursor()
 
@@ -211,8 +237,8 @@ def main():
 	init_database()
 	init_tables()
 	# drop_tables()
-	# fill_course_table()
-	# fill_program_table(4)
+	fill_course_table()
+	fill_program_table(4)
 	interface = Interface()
 	interface.login()
 	vars.conn.close()

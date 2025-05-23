@@ -185,10 +185,27 @@ class Interface:
 		return
 
 	def remove_program_from_student(self):
-		pass
+		choice = ""
+		while True:
+			choice = input("Do you really want to remove the current program (y/n): ")
+			if choice == "y":
+				break
+			elif choice == "n":
+				break
+		if choice == "y":
+			cursor = cvars.conn.cursor()
+			cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (None, self.current_student_id))
+			cursor.close()
+			cvars.conn.commit()
+		return
 
 	def view_all_programs(self):
-		pass
+		programs: list["Program"] = db_commands.get_programs()
+		print("\n------------- Available Programs -------------")
+		for program in programs:
+			print(f"Program {program.id}", end=" | ")
+			print(f"Credits {program.credits}")
+		print("------------------------------------------------")
 
 	def filter_subjects(self):
 		pass

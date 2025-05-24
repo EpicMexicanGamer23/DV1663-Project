@@ -1,7 +1,7 @@
 """Command Line Interface (to get database)"""
 
-from src.classes import Course, Student
-from constants.variables import conn
+from src.classes import Course, Student, Program
+import constants.variables as cvars
 import src.DB_commands as db_commands
 
 
@@ -23,18 +23,27 @@ class Interface:
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
 
+	def set_student_id(self, _student_id: int):
+		self.current_student_id = _student_id
+
 	def checkInput(self, temp, temp_list):
+		result = self.int_convert_check(temp)
+		if result is False:
+			return False
+		if int(temp) >= len(temp_list):
+			print("Input number out of range (not an available command.)")
+			result = False
+		return result
+
+	def int_convert_check(self, value) -> bool:
+		"""Returns true if conversion is possible otherwise false"""
 		result = True
 		try:
-			temp = int(temp)
+			value = int(value)
 		except Exception:
 			print("Input a number for command usage.")
 			result = False
-		else:
-			if temp >= len(temp_list):
-				print("Input number out of range (not an available command.)")
-				result = False
-			return result
+		return result
 
 	def command_print(self, current_text, list_index):
 		print(f"\n-------------{self.title_text[list_index]}--------------")
@@ -55,7 +64,7 @@ class Interface:
 				if int(user_input) == 0:  # login
 					for student in students:
 						if student.Name == username:
-							self.current_student_id = student.StudentID
+							self.set_student_id(student.StudentID)
 							self.main_interface()
 					if students == []:
 						print("User login not found.")
@@ -177,13 +186,47 @@ class Interface:
 				print(courses_dict[user_input])
 
 	def add_program_to_student(self):
-		pass
+		current_student = db_commands.get_student(self.current_student_id)
+		programs: list["Program"] = db_commands.get_programs()
+		valid_program = False
+		while not valid_program:
+			user_input = input("Set program (q to exit): ")
+			if user_input == "q":
+				return
+			if not self.int_convert_check(user_input):
+				continue
+			if any(program.id == int(user_input) for program in programs):
+				valid_program = True
+			else:
+				print(f"There is no program {user_input}")
+		cursor = cvars.conn.cursor()
+		cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (int(user_input), self.current_student_id))
+		cvars.conn.commit()
+		cursor.close()
+		return
 
 	def remove_program_from_student(self):
-		pass
+		choice = ""
+		while True:
+			choice = input("Do you really want to remove the current program (y/n): ")
+			if choice == "y":
+				break
+			elif choice == "n":
+				break
+		if choice == "y":
+			cursor = cvars.conn.cursor()
+			cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (None, self.current_student_id))
+			cursor.close()
+			cvars.conn.commit()
+		return
 
 	def view_all_programs(self):
-		pass
+		programs: list["Program"] = db_commands.get_programs()
+		print("\n------------- Available Programs -------------")
+		for program in programs:
+			print(f"Program {program.id}", end=" | ")
+			print(f"Credits {program.credits}")
+		print("------------------------------------------------")
 
 	def filter_subjects(self):
 		pass

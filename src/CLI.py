@@ -11,18 +11,21 @@ class Interface:
 		self.login_text = ["Login", "Create User", "Exit"]
 		self.title_text = ["MENU", "COURSE MANAGEMENT", "PROGRAM MANAGEMENT", "FILTERS"]
 
-		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Selection", "Exit"]
-		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selected_courses]
+		self.main_text = ["View Course Settings", "View Program Settings", "View Selection", "Exit"]
+		self.main_func = [self.manage_courses, self.manage_programs, self.view_selected_courses]
 
-		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Exit"]
+		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Filter Settings", "Exit"]
 
-		self.all_courses_func = [self.add_course_to_student, self.remove_course_from_student, self.view_all_courses]
+		self.all_courses_func = [self.add_course_to_student, self.remove_course_from_student, self.view_all_courses, self.manage_filters]
 
-		self.all_programs_text = ["Add Program", "Remove Program", "View All Programs", "Exit"]
+		self.all_programs_text = ["Set Program", "Remove Program", "View All Programs", "Exit"]
 		self.all_programs_func = [self.add_program_to_student, self.remove_program_from_student, self.view_all_programs]
 
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
+
+		self.f_subjects = []
+		self.f_points = []
 
 	def set_student_id(self, _student_id: int):
 		self.current_student_id = _student_id
@@ -61,7 +64,7 @@ class Interface:
 			if self.checkInput(user_input, self.login_text):
 				if int(user_input) == 2:  # Exit
 					break
-				username = input("Input Username:")
+				username = input("Input Username: ")
 				if int(user_input) == 0:  # login
 					for student in students:
 						if student.Name == username:
@@ -177,8 +180,29 @@ class Interface:
 				if course in student_list:  # if course not in studentenrollment: add
 					db_commands.remove_from_student_enrollment(self.current_student_id, course_id)
 
+	def __helper_filter_subject__(self, course: "Course"):
+		subjects_str: str = course.get_subjects()  # Get the subjects returned from the sql query as "Subject1, Subject2, etc.."
+		subjects = subjects_str.split(",")  # Split the string into ["Subject1", "Subject2"]
+		for index, subject in enumerate(subjects):
+			subjects[index] = subject.replace(" ", "")  # Remove potential spaces in the subject string
+		for subject in subjects:
+			if subject in self.f_subjects:
+				return True
+		return False
+
+	def __helper__filter_points__(self, course: "Course"):
+		if course.credits in self.f_points:
+			return True
+		return False
+
 	def view_all_courses(self):
 		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)
+		if len(self.f_subjects) != 0:
+			filtered_courses = filter(self.__helper_filter_subject__, selected_courses)
+			selected_courses = filtered_courses
+		if len(self.f_points) != 0:
+			filtered_courses = filter(self.__helper__filter_points__, selected_courses)
+			selected_courses = filtered_courses
 		courses_dict = {}
 		print("-----ALL COURSES------")
 		print("Course | Credits")
@@ -237,13 +261,50 @@ class Interface:
 		print("------------------------------------------------")
 
 	def filter_subjects(self):
-		pass
+		while True:
+			print("\n------------- Subject Filters --------------")
+			print("Includes all courses with either of the options")
+			for index, subject in enumerate(cvars.COURSE_SUBJECTS):
+				if subject[0] in self.f_subjects:
+					print(f"[X] {index}. {subject[0]}")
+				else:
+					print(f"[ ] {index}. {subject[0]}")
+			user_input = input("Enter subject number to filter by (q to exit): ")
+			if user_input == "q":
+				break
+			if not self.checkInput(user_input, cvars.COURSE_SUBJECTS):
+				continue
+			else:
+				if cvars.COURSE_SUBJECTS[int(user_input)][0] in self.f_subjects:
+					self.f_subjects.remove(cvars.COURSE_SUBJECTS[int(user_input)][0])
+				else:
+					self.f_subjects.append(cvars.COURSE_SUBJECTS[int(user_input)][0])
 
 	def filter_points(self):
-		pass
+		available_points = [2, 4, 6, 8]
+		while True:
+			print("\n------------- ECTS Point Filters --------------")
+			print("Includes all courses with either of the options")
+			for index, point in enumerate(available_points):
+				if point in self.f_points:
+					print(f"[X] {index}. {point}")
+				else:
+					print(f"[ ] {index}. {point}")
+			user_input = input("Enter point index to filter by (q to exit): ")
+			if user_input == "q":
+				break
+			if not self.checkInput(user_input, available_points):
+				continue
+			else:
+				if [2, 4, 6, 8][int(user_input)] in self.f_points:
+					self.f_points.remove(available_points[int(user_input)])
+				else:
+					self.f_points.append(available_points[int(user_input)])
 
 	def filter_reset(self):
-		pass
+		self.f_points = []
+		self.f_subjects = []
+		return
 
 
 def main():

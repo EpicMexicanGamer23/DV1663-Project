@@ -34,7 +34,9 @@ def create_fc_course() -> "Course":
 	education_level = EDUCATION_LEVELS[0]
 	study_period = rand.randint(1, 4)
 	language = LANGUAGES[rand.randint(0, len(LANGUAGES) - 1)]
-	new_course = Course(subjects, education_level, study_period, language)
+	course_id = subjects[0][1] + next(id_gen)
+	credits = gen_course_credits(education_level)
+	new_course = Course(course_id, credits, education_level, study_period, language, subjects, [])
 	return new_course
 
 
@@ -43,7 +45,9 @@ def create_sc_course() -> "Course":
 	education_level = EDUCATION_LEVELS[1]
 	study_period = rand.randint(1, 4)
 	language = LANGUAGES[rand.randint(0, len(LANGUAGES) - 1)]
-	new_course = Course(subjects, education_level, study_period, language)
+	course_id = subjects[0][1] + next(id_gen)
+	credits = gen_course_credits(education_level)
+	new_course = Course(course_id, credits, education_level, study_period, language, subjects, [])
 	return new_course
 
 
@@ -57,7 +61,9 @@ def generate_100_courses() -> list:
 		education_level = EDUCATION_LEVELS[0]
 		study_period = rand.randint(1, 4)
 		language = LANGUAGES[rand.randint(0, len(LANGUAGES) - 1)]
-		new_course = Course(subjects, education_level, study_period, language)
+		course_id = subjects[0][1] + next(id_gen)
+		credits = gen_course_credits(education_level)
+		new_course = Course(course_id, credits, education_level, study_period, language, subjects, [])
 		courses.append(new_course)
 	# Secondly we create the remaining courses
 	for _ in range(90):
@@ -65,7 +71,9 @@ def generate_100_courses() -> list:
 		education_level = EDUCATION_LEVELS[rand.randint(0, 1)]
 		study_period = rand.randint(1, 4)
 		language = LANGUAGES[rand.randint(0, len(LANGUAGES) - 1)]
-		new_course = Course(subjects, education_level, study_period, language)
+		course_id = subjects[0][1] + next(id_gen)
+		credits = gen_course_credits(education_level)
+		new_course = Course(course_id, credits, education_level, study_period, language, subjects, [])
 		if (rand.random() < requirement_multiplier) or (education_level == EDUCATION_LEVELS[1]):
 			req_amount = rand.randint(1, requirement_max)
 			if len(courses) < req_amount:

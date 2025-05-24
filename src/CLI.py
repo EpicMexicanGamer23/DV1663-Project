@@ -9,6 +9,7 @@ class Interface:
 	def __init__(self):
 		self.current_student_id = None
 		self.login_text = ["Login", "Create User", "Exit"]
+		self.title_text = ["MENU", "COURSE MANAGEMENT", "PROGRAM MANAGEMENT", "FILTERS"]
 
 		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Courses Selected", "Exit"]
 		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selected_courses]
@@ -44,17 +45,18 @@ class Interface:
 			result = False
 		return result
 
-	def command_print(self, current_text):
-		print("\nAvailable commands: ")
+	def command_print(self, current_text, list_index):
+		print(f"\n-------------{self.title_text[list_index]}--------------")
 		for index, text in enumerate(current_text):
 			print(f"\t{index}. {text}")
 
-	# reminder: login is only checking for a user now, need to associate "Selected courses" with specific login (and only show for that user)
 	def login(self):
 		students: list["Student"] = db_commands.get_students()
 		while True:
-			self.command_print(self.login_text)
-			user_input = input("Input command: ")
+			print("\n-------------LOGIN--------------")
+			for index, text in enumerate(self.login_text):
+				print(f"\t{index}. {text}")
+			user_input = input("Input given: ")
 			if self.checkInput(user_input, self.login_text):
 				if int(user_input) == 2:  # Exit
 					break
@@ -80,7 +82,7 @@ class Interface:
 
 	def main_interface(self):
 		while True:
-			self.command_print(self.main_text)
+			self.command_print(self.main_text, 0)
 
 			command = input("Input given: ")
 
@@ -96,7 +98,7 @@ class Interface:
 
 	def manage_courses(self):
 		while True:
-			self.command_print(self.all_courses_text)
+			self.command_print(self.all_courses_text, 1)
 
 			command = input("Input given: ")
 
@@ -112,7 +114,7 @@ class Interface:
 
 	def manage_programs(self):
 		while True:
-			self.command_print(self.all_programs_text)
+			self.command_print(self.all_programs_text, 2)
 
 			command = input("Input given: ")
 
@@ -128,7 +130,7 @@ class Interface:
 
 	def manage_filters(self):
 		while True:
-			self.command_print(self.filters_text)
+			self.command_print(self.filters_text, 3)
 
 			command = input("Input given: ")
 
@@ -144,6 +146,9 @@ class Interface:
 
 	def view_selected_courses(self):
 		selected_courses = db_commands.get_student_enrollment(self.current_student_id)
+		print("---------------------YOUR SELECTED COURSES:------------------------")
+		for element in selected_courses:
+			print(element)
 
 	def add_course_to_student(self):
 		while True:
@@ -151,18 +156,34 @@ class Interface:
 			if course_id.lower() == "q":
 				break
 
-			course_list = db_commands.get_courses()
+			course_list: list["Course"] = db_commands.get_courses(self.current_student_id)
+			student_list: list["Course"] = db_commands.get_student_enrollment(self.current_student_id)
+			student_list = []
+
 			for course in course_list:
-				if course.id == course_id:
-					db_commands.add_course_to_student(self.current_student_id, course_id)
+				if course.id == course_id.upper():  # course exists
+					if len(student_list) == 0 or course not in student_list:  # if course not in studentenrollment: add
+						db_commands.add_to_student_enrollment(self.current_student_id, course_id)
 
 	def remove_course_from_student(self):
 		pass
 
-	def view_all_courses(student_ID):
-		pass
+	def view_all_courses(self):
+		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)
+		courses_dict = {}
+		print("-----ALL COURSES------")
+		print("Course | Credits")
+		for element in selected_courses:
+			element.print_course_oneliner()
+			courses_dict[element.id] = element
 
-		# SELECT * FROM Courses LEFT JOIN (SELECT * FROM StudentEnrollment WHERE StudentID = current_studentID;) AS SE ON Courses.CourseID = SE.CourseID ORDER BY SE.StudentID DESC
+		while True:
+			user_input = input("Input CourseID (q to stop): ")
+			if user_input.lower() == "q":
+				break
+
+			elif user_input in courses_dict.keys():
+				print(courses_dict[user_input])
 
 	def add_program_to_student(self):
 		current_student = db_commands.get_student(self.current_student_id)
@@ -214,11 +235,6 @@ class Interface:
 		pass
 
 	def filter_reset(self):
-		pass
-
-	def courses_selected_view(self):
-		# program chosen: program_2 || [NO CHOSEN PROGRAM]
-		# Courses \nMa1448 [ECST, Subjects]\n, ...
 		pass
 
 

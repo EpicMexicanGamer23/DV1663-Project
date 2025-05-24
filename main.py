@@ -17,6 +17,32 @@ def init_database():
 	cvars.conn = mysql.connect(host="localhost", user=cvars.username, password=cvars.mysqlpassword, database="dv1663_group_12")
 
 
+def init_views():
+	cursor = cvars.conn.cursor()
+
+	course_subjects = """CREATE OR REPLACE VIEW view_course_subjects AS
+	SELECT 
+		CourseID, 
+		GROUP_CONCAT(Subject SEPARATOR ', ') AS Subjects
+		FROM 
+			CourseSubject
+		GROUP BY 
+			CourseID;"""
+
+	course_requirements = """CREATE OR REPLACE VIEW view_course_requirements AS
+	SELECT
+		CourseID,
+		GROUP_CONCAT(RequirementCourse SEPARATOR ', ') AS Requirements
+		FROM
+			coursesrequired
+		GROUP BY
+			CourseID;"""
+	cursor.execute(course_subjects)
+	cursor.execute(course_requirements)
+	cvars.conn.commit()
+	cursor.close()
+
+
 def init_tables():
 	cursor = cvars.conn.cursor()
 
@@ -282,7 +308,7 @@ def main():
 	init_func_procedures()
 	init_triggers()
 	# drop_tables()
-	# fill_course_table()
+	fill_course_table()
 	fill_program_table(4)
 	interface = Interface()
 	interface.login()

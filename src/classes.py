@@ -11,14 +11,17 @@ class Course:
 	teaching_language: str
 	requirement_courses: list["Course"]
 
-	def __init__(self, _subjects: list[tuple[str, str]], _level: str, _sp: 1, _tl: str):
+	def __init__(self, _id: str, _cr: int, _level: str, _sp: 1, _tl: str, _subjects: list[tuple[str, str]], _rc: list["Course"]):
 		self.subjects = _subjects
 		self.education_level = _level
-		self.id = self.subjects[0][1] + next(gen.id_gen)
-		self.credits = gen.gen_course_credits(self.education_level)
+		self.id = _id
+		self.credits = _cr
 		self.study_period = _sp
 		self.teaching_language = _tl
-		self.requirement_courses = []
+		self.requirement_courses = _rc
+
+	def print_course_oneliner(self):
+		print(f"{self.id}, {self.credits}")
 
 	def __str__(self):
 		out = "Course:"
@@ -26,16 +29,25 @@ class Course:
 		out += f"\n\tCredits: {self.credits}"
 		out += f"\n\tEducation Level: {self.education_level}"
 		out += "\n\tSubject: "
-		for subject in self.subjects:
-			out += subject[0]
-			out += ", "
+		for item in self.subjects:
+			if isinstance(item, tuple) and len(item) == 2:
+				first, second = item
+				out += first + ", " + second
+			else:
+				first = item[0]
+				out += first
+
 		out += f"\n\tStudy Period: {self.study_period}"
 		out += f"\n\tTeaching Language: {self.teaching_language}"
-		out += "\n\tRequirement Courses: "
-		for course in self.requirement_courses:
-			out += course.id
-			out += ", "
+		if isinstance(self.requirement_courses, list):
+			out += "\n\tRequirement Courses: "
+			for course in self.requirement_courses:
+				out += course.id
+				out += ", "
 		return out
+
+	def __eq__(self, _other: "Course"):
+		return self.id == _other.id
 
 	def get_values(self):
 		"""

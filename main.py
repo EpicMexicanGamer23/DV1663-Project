@@ -305,11 +305,15 @@ def main():
 	print("CONNECTED")
 	init_database()
 	init_tables()
-	init_func_procedures()
-	init_triggers()
+
 	# drop_tables()
+
+	init_func_procedures()
+	init_views()
+	init_triggers()
 	fill_course_table()
 	fill_program_table(4)
+
 	interface = Interface()
 	interface.login()
 	cvars.conn.close()

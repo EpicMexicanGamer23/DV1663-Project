@@ -55,6 +55,7 @@ class Interface:
 				if int(user_input) == 0:  # login
 					for student in students:
 						if student.Name == username:
+							self.current_student_id = student.StudentID
 							self.main_interface()
 					if students == []:
 						print("User login not found.")
@@ -139,7 +140,6 @@ class Interface:
 		print("---------------------YOUR SELECTED COURSES:------------------------")
 		for element in selected_courses:
 			print(element)
-		self.manage_courses()
 
 	def add_course_to_student(self):
 		while True:
@@ -148,21 +148,33 @@ class Interface:
 				break
 
 			course_list: list["Course"] = db_commands.get_courses(self.current_student_id)
-			# student_list: list["Course"] = db_commands.get_student_enrollment()
+			student_list: list["Course"] = db_commands.get_student_enrollment(self.current_student_id)
+			student_list = []
+
 			for course in course_list:
-				if course.id == course_id.upper():
-					pass
-					# db_commands.add_course_to_student(self.current_student_id, course_id)
+				if course.id == course_id.upper():  # course exists
+					if len(student_list) == 0 or course not in student_list:  # if course not in studentenrollment: add
+						db_commands.add_to_student_enrollment(self.current_student_id, course_id)
 
 	def remove_course_from_student(self):
 		pass
 
 	def view_all_courses(self):
-		selected_courses = db_commands.get_courses(self.current_student_id)
-		print("---------------------ALL COURSES:------------------------")
+		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)
+		courses_dict = {}
+		print("-----ALL COURSES------")
+		print("Course | Credits")
 		for element in selected_courses:
-			print(element)
-		self.manage_courses()
+			element.print_course_oneliner()
+			courses_dict[element.id] = element
+
+		while True:
+			user_input = input("Input CourseID (q to stop): ")
+			if user_input.lower() == "q":
+				break
+
+			elif user_input in courses_dict.keys():
+				print(courses_dict[user_input])
 
 	def add_program_to_student(self):
 		pass

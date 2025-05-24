@@ -20,6 +20,9 @@ class Course:
 		self.teaching_language = _tl
 		self.requirement_courses = _rc
 
+	def print_course_oneliner(self):
+		print(f"{self.id}, {self.credits}")
+
 	def __str__(self):
 		out = "Course:"
 		out += f"\n\tCourseID: {self.id}"
@@ -41,7 +44,10 @@ class Course:
 			for course in self.requirement_courses:
 				out += course.id
 				out += ", "
-		return out  # nonetype is not iterable
+		return out
+
+	def __eq__(self, _other: "Course"):
+		return self.id == _other.id
 
 	def get_values(self):
 		"""

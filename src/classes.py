@@ -46,8 +46,8 @@ class Course:
 				out += ", "
 		return out
 
-	def __eq__(self, _other: "Course"):
-		return self.id == _other.id
+	def __eq__(self, _other: "str"):
+		return self.id == _other
 
 	def get_values(self):
 		"""

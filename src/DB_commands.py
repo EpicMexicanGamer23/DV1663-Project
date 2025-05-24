@@ -1,10 +1,10 @@
-import constants.variables as vars
+import constants.variables as cvars
 import mysql.connector as mysql
 from src.classes import Student, Course, Program
 
 
 def get_students() -> list["Student"]:
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	cursor.execute("SELECT * FROM Students")
 	students = cursor.fetchall()
 	cursor.close()
@@ -15,7 +15,7 @@ def get_students() -> list["Student"]:
 
 
 def get_student(student_id: int) -> "Student":
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	cursor.execute("SELECT * FROM Students WHERE StudentID = %s", (student_id,))
 	student_data = cursor.fetchall()
 	cursor.close()
@@ -23,24 +23,24 @@ def get_student(student_id: int) -> "Student":
 
 
 def create_student(username: str):
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	username = username.lower()
 	cursor.execute("INSERT INTO Students(Name) VALUES(%s)", (username,))
-	vars.conn.commit()
+	cvars.conn.commit()
 	cursor.close()
 	return
 
 
 def get_courses(student_id):
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	cursor.execute(
 		"""SELECT c.*, vcs.Subjects, vcr.Requirements,
-CASE WHEN se.StudentID IS NOT NULL THEN 1 ELSE 0 END AS IsStudentEnrolled
-FROM courses c
-LEFT JOIN view_course_subjects vcs ON c.CourseID = vcs.CourseID
-LEFT JOIN view_course_requirements vcr ON c.CourseID = vcr.CourseID
-LEFT JOIN studentenrollment se ON c.CourseID = se.CourseID AND se.StudentID = %s
-ORDER BY 
+			CASE WHEN se.StudentID IS NOT NULL THEN 1 ELSE 0 END AS IsStudentEnrolled
+			FROM courses c
+			LEFT JOIN view_course_subjects vcs ON c.CourseID = vcs.CourseID
+			LEFT JOIN view_course_requirements vcr ON c.CourseID = vcr.CourseID
+			LEFT JOIN studentenrollment se ON c.CourseID = se.CourseID AND se.StudentID = %s
+			ORDER BY 
 	IsStudentEnrolled DESC, 
     c.CourseID;""",
 		(student_id,),
@@ -54,7 +54,7 @@ ORDER BY
 
 
 def get_student_enrollment(student_ID):
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	cursor.execute(
 		"""SELECT se.* FROM studentenrollment se 
 			WHERE se.studentID = "%s";""",
@@ -69,7 +69,7 @@ def get_student_enrollment(student_ID):
 
 
 def get_programs():
-	cursor = vars.conn.cursor()
+	cursor = cvars.conn.cursor()
 	cursor.execute("SELECT * FROM Programs")
 	programs = cursor.fetchall()
 	program_list = []
@@ -80,8 +80,20 @@ def get_programs():
 
 
 def add_to_student_enrollment(studentID, courseID):
-	cursor = vars.conn.cursor()
-	cursor.execute("INSERT INTO studentenrollment(CourseID, studentID) VALUES(%s, %s)", (courseID, studentID))
-	vars.conn.commit()
+	cursor = cvars.conn.cursor()
+	cursor.execute(
+		"""INSERT INTO studentenrollment(CourseID, studentID) VALUES(%s, %s)""",
+		(courseID, studentID),
+	)
+	cvars.conn.commit()
 	cursor.close()
-	pass
+
+
+def remove_from_student_enrollment(student_id, course_id):
+	cursor = cvars.conn.cursor()
+	cursor.execute(
+		"""DELETE FROM studentenrollment WHERE CourseID = %s AND studentID = %s;""",
+		(course_id, student_id),
+	)
+	cvars.conn.commit()
+	cursor.close()

@@ -11,10 +11,11 @@ class Interface:
 		self.login_text = ["Login", "Create User", "Exit"]
 		self.title_text = ["MENU", "COURSE MANAGEMENT", "PROGRAM MANAGEMENT", "FILTERS"]
 
-		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Courses Selected", "Exit"]
+		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Selection", "Exit"]
 		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selected_courses]
 
 		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Exit"]
+
 		self.all_courses_func = [self.add_course_to_student, self.remove_course_from_student, self.view_all_courses]
 
 		self.all_programs_text = ["Add Program", "Remove Program", "View All Programs", "Exit"]
@@ -157,8 +158,7 @@ class Interface:
 				break
 
 			course_list: list["Course"] = db_commands.get_courses(self.current_student_id)
-			student_list: list["Course"] = db_commands.get_student_enrollment(self.current_student_id)
-			student_list = []
+			student_list: list[str] = db_commands.get_student_enrollment(self.current_student_id)
 
 			for course in course_list:
 				if course.id == course_id.upper():  # course exists
@@ -166,7 +166,16 @@ class Interface:
 						db_commands.add_to_student_enrollment(self.current_student_id, course_id)
 
 	def remove_course_from_student(self):
-		pass
+		while True:
+			course_id = input("Input CourseID (q to stop): ")
+			if course_id.lower() == "q":
+				break
+
+			student_list: list[str] = db_commands.get_student_enrollment(self.current_student_id)
+
+			for course in student_list:
+				if course in student_list:  # if course not in studentenrollment: add
+					db_commands.remove_from_student_enrollment(self.current_student_id, course_id)
 
 	def view_all_courses(self):
 		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)

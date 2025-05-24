@@ -26,15 +26,21 @@ class Course:
 		out += f"\n\tCredits: {self.credits}"
 		out += f"\n\tEducation Level: {self.education_level}"
 		out += "\n\tSubject: "
-		for subject in self.subjects:
-			out += subject[0]
-			out += ", "
+		for item in self.subjects:
+			if isinstance(item, tuple) and len(item) == 2:
+				first, second = item
+				out += first + ", " + second
+			else:
+				first = item[0]
+				out += first
+
 		out += f"\n\tStudy Period: {self.study_period}"
 		out += f"\n\tTeaching Language: {self.teaching_language}"
-		out += "\n\tRequirement Courses: "
-		for course in self.requirement_courses:
-			out += course.id
-			out += ", "
+		if isinstance(self.requirement_courses, list):
+			out += "\n\tRequirement Courses: "
+			for course in self.requirement_courses:
+				out += course.id
+				out += ", "
 		return out  # nonetype is not iterable
 
 	def get_values(self):

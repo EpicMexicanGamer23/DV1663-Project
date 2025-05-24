@@ -137,11 +137,7 @@ def init_func_procedures():
 			WHERE StudentEnrollment.StudentID = student_id AND
 			StudentEnrollment.CourseID IN (
 				SELECT ProgramCourses.CourseID FROM ProgramCourses
-				INNER JOIN Courses ON Courses.CourseID = ProgramCourses.CourseID
-				WHERE ProgramCourses.ProgramID = program_id AND
-				(
-					Courses.EducationLevel = "Second-cycle"
-				)
+				WHERE ProgramCourses.ProgramID = program_id
 			);
 	END $$
 	DELIMITER ;
@@ -151,28 +147,53 @@ def init_func_procedures():
 	DELIMITER $$
 	CREATE PROCEDURE add_program_courses (IN program_id INT, IN student_id INT)
 	BEGIN
-		INSERT INTO StudentEnrollment(CourseID, StudentID)
+		INSERT IGNORE INTO StudentEnrollment(CourseID, StudentID)
 			SELECT ProgramCourses.CourseID, student_id
 			FROM ProgramCourses
-			INNER JOIN Courses ON Courses.CourseID = ProgramCourses.CourseID
-			WHERE ProgramCourses.ProgramID = program_id AND
-			(
-				Courses.EducationLevel = "Second-cycle"
-			)
-			;
+			WHERE ProgramCourses.ProgramID = program_id;
 	END $$
+	DELIMITER ;
+	"""
+
+	req_insert_courses = """
+	DELIMITER $$
+	CREATE PROCEDURE req_insert_courses (IN courseID VARCHAR(10), IN studentID INT)
+	BEGIN
+		DECLARE req_course VARCHAR(10);
+		DECLARE done BOOL DEFAULT FALSE;
+		DECLARE cur CURSOR FOR
+			SELECT RequirementCourse FROM CoursesRequired AS cr
+			WHERE cr.CourseID = courseID;
+		DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+		INSERT IGNORE INTO StudentEnrollment (CourseID, StudentID) VALUES(courseID, studentID);
+		OPEN cur;
+		add_loop: 
+			LOOP
+				FETCH cur INTO req_course;
+				IF done THEN
+					LEAVE add_loop;
+				END IF;
+				CALL req_insert_courses(req_course, studentID);
+			END LOOP;
+		CLOSE cur;
+	END
+	$$
 	DELIMITER ;
 	"""
 
 	cursor = cvars.conn.cursor()
 	cursor.execute("DROP FUNCTION IF EXISTS has_req_courses;")
 	cursor.execute(has_req_courses)
+	cursor.execute("DROP PROCEDURE IF EXISTS req_insert_courses;")
+	cursor.execute(req_insert_courses)
 	cursor.execute("DROP PROCEDURE IF EXISTS get_course;")
 	cursor.execute(get_course)
 	cursor.execute("DROP PROCEDURE IF EXISTS add_program_courses;")
 	cursor.execute(add_program_courses)
 	cursor.execute("DROP PROCEDURE IF EXISTS remove_program_courses;")
 	cursor.execute(remove_program_courses)
+	cursor.execute("DROP PROCEDURE IF EXISTS req_insert_courses;")
+	cursor.execute(req_insert_courses)
 	cursor.close()
 	cvars.conn.commit()
 	return
@@ -220,10 +241,11 @@ def init_triggers():
 	END$$
 	DELIMITER ;
 """
+
 	cursor = cvars.conn.cursor()
-	cursor.execute("DROP TRIGGER IF EXISTS add_program_trigger")
+	cursor.execute("DROP TRIGGER IF EXISTS add_program_trigger;")
 	cursor.execute(program_update_add_trigger)
-	cursor.execute("DROP TRIGGER IF EXISTS remove_program_trigger")
+	cursor.execute("DROP TRIGGER IF EXISTS remove_program_trigger;")
 	cursor.execute(program_update_remove_trigger)
 	cursor.close()
 	cvars.conn.commit()

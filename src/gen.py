@@ -81,14 +81,14 @@ def generate_program() -> "Program":
 	sc_courses = []
 	fc_courses = []
 	total_credits = 0
-	new_program = Program()
+	program_credits = [180, 300][rand.randint(0, 1)]
 	for _ in range(10):
 		new_course = create_sc_course()
 		total_credits += new_course.credits
 		sc_courses.append(new_course)
 
 	index = 0
-	while new_program.credits - total_credits > 6:  # While we are still able to create the largest possible first-cycle course
+	while program_credits - total_credits > 6:  # While we are still able to create the largest possible first-cycle course
 		sc_course: "Course" = sc_courses[index]
 		new_course = create_fc_course()
 		fc_courses.append(new_course)
@@ -101,9 +101,10 @@ def generate_program() -> "Program":
 			index = 0
 
 	# At this point we need to add a course with the difference in points
-	credits_left = new_program.credits - total_credits
+	credits_left = program_credits - total_credits
 	extra_course = create_fc_course()
 	extra_course.credits = credits_left
 	fc_courses.append(extra_course)
-	new_program.course_list = fc_courses + sc_courses
+	new_program = Program((next(prog_gen), program_credits))
+	new_program.set_course_list(fc_courses + sc_courses)
 	return new_program

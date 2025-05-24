@@ -195,7 +195,6 @@ class Interface:
 				print(courses_dict[user_input])
 
 	def add_program_to_student(self):
-		current_student = db_commands.get_student(self.current_student_id)
 		programs: list["Program"] = db_commands.get_programs()
 		valid_program = False
 		while not valid_program:

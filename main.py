@@ -100,34 +100,78 @@ def init_tables():
 
 
 def init_func_procedures():
+	get_course = """
+	DELIMITER $$
+	CREATE PROCEDURE get_course(IN courseID INT)
+	BEGIN
+		SELECT * FROM Courses WHERE CourseID = courseID;
+	END
+	$$
+	DELIMITER ;
+	"""
+
+	has_req_courses = """
+	DELIMITER $$
+	CREATE FUNCTION has_req_courses(course_id VARCHAR(10))
+	RETURNS BOOL
+	DETERMINISTIC
+	READS SQL DATA
+	BEGIN
+		DECLARE amount INT;
+
+		SELECT COUNT(*) INTO amount
+		FROM CoursesRequired
+		WHERE CourseID = course_id;
+
+		RETURN amount > 0;
+	END
+	$$
+	DELIMITER ;
+	"""
+
 	remove_program_courses = """
 	DELIMITER $$
 	CREATE PROCEDURE remove_program_courses(IN program_id INT, IN student_id INT)
 	BEGIN
 		DELETE FROM StudentEnrollment
-			WHERE StudentEnrollment.CourseID IN (
-				SELECT CourseID FROM ProgramCourses WHERE ProgramCourses.ProgramID = program_id
-				) 
-				AND StudentEnrollment.StudentID = student_id;
+			WHERE StudentEnrollment.StudentID = student_id AND
+			StudentEnrollment.CourseID IN (
+				SELECT ProgramCourses.CourseID FROM ProgramCourses
+				INNER JOIN Courses ON Courses.CourseID = ProgramCourses.CourseID
+				WHERE ProgramCourses.ProgramID = program_id AND
+				(
+					Courses.EducationLevel = "Second-cycle"
+				)
+			);
 	END $$
 	DELIMITER ;
 	"""
+
 	add_program_courses = """
 	DELIMITER $$
 	CREATE PROCEDURE add_program_courses (IN program_id INT, IN student_id INT)
 	BEGIN
 		INSERT INTO StudentEnrollment(CourseID, StudentID)
-			SELECT CourseID, student_id
+			SELECT ProgramCourses.CourseID, student_id
 			FROM ProgramCourses
-			WHERE ProgramCourses.ProgramID = program_id;
+			INNER JOIN Courses ON Courses.CourseID = ProgramCourses.CourseID
+			WHERE ProgramCourses.ProgramID = program_id AND
+			(
+				Courses.EducationLevel = "Second-cycle"
+			)
+			;
 	END $$
 	DELIMITER ;
 	"""
 
 	cursor = cvars.conn.cursor()
-	cursor.execute("DROP PROCEDURE IF EXISTS add_program_courses")
+	cursor.execute("DROP FUNCTION IF EXISTS has_req_courses;")
+	cursor.execute(has_req_courses)
+	cursor.execute("DROP PROCEDURE IF EXISTS get_course;")
+	cursor.execute(get_course)
+	cursor.execute("DROP PROCEDURE IF EXISTS add_program_courses;")
 	cursor.execute(add_program_courses)
-	cursor.execute("DROP PROCEDURE IF EXISTS remove_program_courses")
+	cursor.execute("DROP PROCEDURE IF EXISTS remove_program_courses;")
 	cursor.execute(remove_program_courses)
 	cursor.close()
 	cvars.conn.commit()
@@ -164,9 +208,11 @@ def init_triggers():
 	BEGIN
 		IF NEW.ProgramID IS NOT NULL THEN
 			IF OLD.ProgramID IS NULL THEN
+				CALL remove_program_courses(NEW.ProgramID, NEW.StudentID);
 				CALL add_program_courses(NEW.ProgramID, NEW.StudentID);
 			ELSE
 				IF OLD.ProgramID <> NEW.ProgramID THEN
+					CALL remove_program_courses(NEW.ProgramID, NEW.StudentID);
 					CALL add_program_courses(NEW.ProgramID, NEW.StudentID);
 				END IF;
 			END IF;

@@ -85,6 +85,7 @@ def add_to_student_enrollment(studentID, courseID):
 		"""INSERT INTO studentenrollment(CourseID, studentID) VALUES(%s, %s)""",
 		(courseID, studentID),
 	)
+	cursor.callproc("req_insert_courses", (courseID, studentID))
 	cvars.conn.commit()
 	cursor.close()
 

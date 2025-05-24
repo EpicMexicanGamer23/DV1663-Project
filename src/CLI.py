@@ -163,7 +163,7 @@ class Interface:
 			for course in course_list:
 				if course.id == course_id.upper():  # course exists
 					if len(student_list) == 0 or course not in student_list:  # if course not in studentenrollment: add
-						db_commands.add_to_student_enrollment(self.current_student_id, course_id)
+						db_commands.add_to_student_enrollment(self.current_student_id, course.id)
 
 	def remove_course_from_student(self):
 		while True:

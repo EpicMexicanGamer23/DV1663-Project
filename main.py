@@ -208,6 +208,7 @@ def init_func_procedures():
 	"""
 
 	cursor = cvars.conn.cursor()
+	cursor.execute("SET SESSION max_sp_recursion_depth = 256;")  # Set maximum recursion depth to 256
 	cursor.execute("DROP FUNCTION IF EXISTS has_req_courses;")
 	cursor.execute(has_req_courses)
 	cursor.execute("DROP PROCEDURE IF EXISTS req_insert_courses;")

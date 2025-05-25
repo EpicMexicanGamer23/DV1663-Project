@@ -296,7 +296,7 @@ def insert_course(course: "Course"):
 	cursor = cvars.conn.cursor()
 	# Insert the course information into the Course Table
 	data = course.get_values()
-	cursor.execute("INSERT INTO Courses(CourseID, ETCSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)", data)
+	cursor.execute("INSERT INTO Courses(CourseID, ECTSCredits, EducationLevel, StudyPeriod, TeachingLanguage) VALUES(%s, %s, %s, %s, %s)", data)
 	# Inser the subjects for the course in the CourseSubject Table
 	subjects = course.get_subjects()
 	for subject in subjects:

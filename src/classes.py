@@ -11,24 +11,20 @@ class Course:
 	teaching_language: str
 	requirement_courses: list["Course"]
 
-	def __init__(self, _id: str, _cr: int, _level: str, _sp: 1, _tl: str, _subjects: list[tuple[str, str]], _rc: list["Course"]):
+	def __init__(self, _id: str, _cr: int, _level: str, _sp: 1, _tl: str, _subjects: list[tuple[str, str]], _rc: list["Course"] = None):
 		self.subjects = _subjects
 		self.education_level = _level
 		self.id = _id
 		self.credits = _cr
 		self.study_period = _sp
 		self.teaching_language = _tl
-		self.requirement_courses = _rc
+		self.requirement_courses = _rc if _rc else []
 
 	def print_course_oneliner(self):
 		print(f"{self.id}, {self.credits}")
 
 	def __str__(self):
-		out = "Course:"
-		out += f"\n\tCourseID: {self.id}"
-		out += f"\n\tCredits: {self.credits}"
-		out += f"\n\tEducation Level: {self.education_level}"
-		out += "\n\tSubject: "
+		out = f"\t\t{self.id}\t {self.credits} \t\t{self.education_level}\t {self.study_period} \t{self.teaching_language}\t\t"
 		for item in self.subjects:
 			if isinstance(item, tuple) and len(item) == 2:
 				first, second = item
@@ -36,14 +32,12 @@ class Course:
 			else:
 				first = item[0]
 				out += first
+		out += "\t"
 
-		out += f"\n\tStudy Period: {self.study_period}"
-		out += f"\n\tTeaching Language: {self.teaching_language}"
-		if isinstance(self.requirement_courses, list):
-			out += "\n\tRequirement Courses: "
+		if self.requirement_courses:
 			for course in self.requirement_courses:
-				out += course.id
-				out += ", "
+				out += course
+
 		return out
 
 	def __eq__(self, _other: "str"):

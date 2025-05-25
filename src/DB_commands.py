@@ -37,12 +37,12 @@ def get_courses(student_id):
 		"""SELECT c.*, vcs.Subjects, vcr.Requirements,
 			CASE WHEN se.StudentID IS NOT NULL THEN 1 ELSE 0 END AS IsStudentEnrolled
 			FROM courses c
-			LEFT JOIN view_course_subjects vcs ON c.CourseID = vcs.CourseID
-			LEFT JOIN view_course_requirements vcr ON c.CourseID = vcr.CourseID
-			LEFT JOIN studentenrollment se ON c.CourseID = se.CourseID AND se.StudentID = %s
+				LEFT JOIN view_course_subjects vcs ON c.CourseID = vcs.CourseID
+				LEFT JOIN view_course_requirements vcr ON c.CourseID = vcr.CourseID
+				LEFT JOIN studentenrollment se ON c.CourseID = se.CourseID AND se.StudentID = %s
 			ORDER BY 
-	IsStudentEnrolled DESC, 
-    c.CourseID;""",
+			IsStudentEnrolled DESC, 
+			c.CourseID;""",
 		(student_id,),
 	)
 	courses = cursor.fetchall()
@@ -65,6 +65,25 @@ def get_student_enrollment(student_ID):
 	course_list = []
 	for element in courses:
 		course_list.append(element[0])
+	return course_list
+
+
+def get_detailed_enrollment(student_ID):
+	cursor = cvars.conn.cursor()
+	cursor.execute(
+		"""SELECT c.*, vcs.Subjects, vcr.Requirements
+FROM courses c
+LEFT JOIN view_course_subjects vcs ON c.CourseID = vcs.CourseID
+LEFT JOIN view_course_requirements vcr ON c.CourseID = vcr.CourseID
+JOIN studentenrollment se ON c.CourseID = se.CourseID
+WHERE se.StudentID = %s;""",
+		(student_ID,),
+	)
+	courses = cursor.fetchall()
+	cursor.close()
+	course_list = []
+	for element in courses:
+		course_list.append(Course(element[0], element[1], element[2], element[3], element[4], element[5], element[6]))
 	return course_list
 
 

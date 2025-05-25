@@ -21,7 +21,7 @@ class Course:
 		self.requirement_courses = _rc if _rc else []
 
 	def print_course_oneliner(self):
-		print(f"{self.id}, {self.credits}")
+		print(f"\t{self.id} \t {self.credits}")
 
 	def __str__(self):
 		out = f"\t\t{self.id}\t {self.credits} \t\t{self.education_level}\t {self.study_period} \t{self.teaching_language}\t\t"

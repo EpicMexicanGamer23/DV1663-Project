@@ -13,8 +13,7 @@ class Interface:
 		self.title_text = ["MENU", "COURSE MANAGEMENT", "PROGRAM MANAGEMENT", "FILTERS"]
 
 		self.main_text = ["View Course Settings", "View Program Settings", "View Selection", "Exit"]
-		self.main_func = [self.manage_courses, self.manage_programs, self.view_selected_courses]
-
+		self.main_func = [self.manage_courses, self.manage_programs, self.view_selection]
 
 		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Filter Settings", "Exit"]
 
@@ -222,8 +221,8 @@ class Interface:
 			filtered_courses = list(filter(in_program, selected_courses))
 			selected_courses = filtered_courses
 		courses_dict = {}
-		print("-----ALL COURSES------")
-		print("Course | Credits")
+		print("\t-----ALL COURSES------")
+		print("\tCourse | Credits")
 		for element in selected_courses:
 			element.print_course_oneliner()
 			courses_dict[element.id] = element

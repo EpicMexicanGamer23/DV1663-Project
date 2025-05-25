@@ -8,11 +8,12 @@ import src.DB_commands as db_commands
 class Interface:
 	def __init__(self):
 		self.current_student_id = None
+		self.current_student_name = None
 		self.login_text = ["Login", "Create User", "Exit"]
 		self.title_text = ["MENU", "COURSE MANAGEMENT", "PROGRAM MANAGEMENT", "FILTERS"]
 
 		self.main_text = ["View Course Settings", "View Programs", "Filters", "View Selection", "Exit"]
-		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selected_courses]
+		self.main_func = [self.manage_courses, self.manage_programs, self.manage_filters, self.view_selection]
 
 		self.all_courses_text = ["Add Course", "Remove Course", "View All Courses", "Exit"]
 
@@ -24,8 +25,9 @@ class Interface:
 		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
 		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
 
-	def set_student_id(self, _student_id: int):
+	def set_student_id(self, _student_id: int, _student_name: str):
 		self.current_student_id = _student_id
+		self.current_student_name = _student_name
 
 	def checkInput(self, temp, temp_list):
 		result = self.int_convert_check(temp)
@@ -65,7 +67,7 @@ class Interface:
 				if int(user_input) == 0:  # login
 					for student in students:
 						if student.Name == username:
-							self.set_student_id(student.StudentID)
+							self.set_student_id(student.StudentID, student.Name)
 							self.main_interface()
 					if students == []:
 						print("User login not found.")
@@ -145,11 +147,20 @@ class Interface:
 					self.filters_func[index]()
 					continue
 
-	def view_selected_courses(self):
-		selected_courses = db_commands.get_student_enrollment(self.current_student_id)
-		print("---------------------YOUR SELECTED COURSES:------------------------")
+	def view_selection(self):
+		selected_courses = db_commands.get_detailed_enrollment(self.current_student_id)
+		print("-------------SELECTION---------------")
+		print(f"Name: {self.current_student_name}")
+		student = db_commands.get_student(self.current_student_id)
+		if student.ProgramID:
+			print(f"Program: [Program {student.ProgramID}]")
+		else:
+			print("Program: [NO PROGRAM]")
+
+		print("Courses:")
+		print("		CourseID | Credits | Education Level | Study Period | 	Language | 		Subjects 		| 	Requirements")
 		for element in selected_courses:
-			print(element)
+			print(element)  # unpacking the tuple
 
 	def add_course_to_student(self):
 		while True:
@@ -195,7 +206,6 @@ class Interface:
 				print(courses_dict[user_input])
 
 	def add_program_to_student(self):
-		current_student = db_commands.get_student(self.current_student_id)
 		programs: list["Program"] = db_commands.get_programs()
 		valid_program = False
 		while not valid_program:

@@ -21,11 +21,12 @@ class Interface:
 		self.all_programs_text = ["Set Program", "Remove Program", "View All Programs", "Exit"]
 		self.all_programs_func = [self.add_program_to_student, self.remove_program_from_student, self.view_all_programs]
 
-		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Reset Filters", "Exit"]
-		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_reset]
+		self.filters_text = ["Filter By Course Subjects", "Filter By Course Points", "Filter By Program", "Reset Filters", "Exit"]
+		self.filters_func = [self.filter_subjects, self.filter_points, self.filter_programs, self.filter_reset]
 
 		self.f_subjects = []
 		self.f_points = []
+		self.f_programs = []
 
 	def set_student_id(self, _student_id: int):
 		self.current_student_id = _student_id
@@ -190,18 +191,26 @@ class Interface:
 				return True
 		return False
 
-	def __helper__filter_points__(self, course: "Course"):
+	def __helper_filter_points__(self, course: "Course"):
 		if course.credits in self.f_points:
 			return True
 		return False
 
+	def __helper_filter_program__(self, course: "Course"):
+		pass
+
 	def view_all_courses(self):
 		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)
 		if len(self.f_subjects) != 0:
-			filtered_courses = filter(self.__helper_filter_subject__, selected_courses)
+			filtered_courses = list(filter(self.__helper_filter_subject__, selected_courses))
 			selected_courses = filtered_courses
 		if len(self.f_points) != 0:
-			filtered_courses = filter(self.__helper__filter_points__, selected_courses)
+			filtered_courses = list(filter(self.__helper_filter_points__, selected_courses))
+			selected_courses = filtered_courses
+		if len(self.f_programs) != 0:
+			program_courses = db_commands.get_program_courses(self.f_programs)
+			in_program = lambda x: x.id in program_courses
+			filtered_courses = list(filter(in_program, selected_courses))
 			selected_courses = filtered_courses
 		courses_dict = {}
 		print("-----ALL COURSES------")
@@ -262,7 +271,7 @@ class Interface:
 
 	def filter_subjects(self):
 		while True:
-			print("\n------------- Subject Filters --------------")
+			print("\n------------- Subject Filter --------------")
 			print("Includes all courses with either of the options")
 			for index, subject in enumerate(cvars.COURSE_SUBJECTS):
 				if subject[0] in self.f_subjects:
@@ -283,7 +292,7 @@ class Interface:
 	def filter_points(self):
 		available_points = [2, 4, 6, 8]
 		while True:
-			print("\n------------- ECTS Point Filters --------------")
+			print("\n------------- ECTS Point Filter --------------")
 			print("Includes all courses with either of the options")
 			for index, point in enumerate(available_points):
 				if point in self.f_points:
@@ -301,9 +310,31 @@ class Interface:
 				else:
 					self.f_points.append(available_points[int(user_input)])
 
+	def filter_programs(self):
+		programs: list["Program"] = db_commands.get_programs()
+		while True:
+			print("\n------------- Program Filter --------------")
+			print("Includes all courses with either of the options")
+			for index, program in enumerate(programs):
+				if program.id in self.f_programs:
+					print(f"[X] {index}. Program {program.id}")
+				else:
+					print(f"[ ] {index}. Program {program.id}")
+			user_input = input("Enter program index to filter by (q to exit): ")
+			if user_input == "q":
+				break
+			if not self.checkInput(user_input, programs):
+				continue
+			else:
+				if programs[int(user_input)].id in self.f_programs:
+					self.f_programs.remove(programs[int(user_input)].id)
+				else:
+					self.f_programs.append(programs[int(user_input)].id)
+
 	def filter_reset(self):
 		self.f_points = []
 		self.f_subjects = []
+		self.f_programs = []
 		return
 
 

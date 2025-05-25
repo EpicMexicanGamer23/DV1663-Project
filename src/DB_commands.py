@@ -79,6 +79,19 @@ def get_programs():
 	return program_list
 
 
+def get_program_courses(programs: list[int]) -> list[str]:
+	cursor = cvars.conn.cursor()
+	courses = []
+	for program in programs:
+		cursor.execute("SELECT * FROM ProgramCourses WHERE ProgramID = %s", (program,))
+		courses += cursor.fetchall()
+	course_list = []
+	for course in courses:
+		course_list.append(course[1])
+	cursor.close()
+	return course_list
+
+
 def add_to_student_enrollment(studentID, courseID):
 	cursor = cvars.conn.cursor()
 	cursor.execute(

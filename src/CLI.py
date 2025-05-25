@@ -152,7 +152,7 @@ class Interface:
 					continue
 
 	def view_selection(self):
-		selected_courses = db_commands.get_detailed_enrollment(self.current_student_id)
+		selected_courses: list["Course"] = db_commands.get_detailed_enrollment(self.current_student_id)
 		print("-------------SELECTION---------------")
 		print(f"Name: {self.current_student_name}")
 		student = db_commands.get_student(self.current_student_id)
@@ -162,9 +162,20 @@ class Interface:
 			print("Program: [NO PROGRAM]")
 
 		print("Courses:")
-		print("		CourseID | Credits | Education Level | Study Period | 	Language | 		Subjects 		| 	Requirements")
+		headers = ["CourseID", "Credits", "Education Level", "Study Period", "Language", "Subjects", "Requirements"]
+		print(f"{headers[0]:<9}| {headers[1]:<7} | {headers[2]:<15} | {headers[3]:<12} | {headers[4]:<7} | {headers[5]} | {headers[6]}")
 		for element in selected_courses:
-			print(element)  # unpacking the tuple
+			data = list(element.get_values())
+			subjects = element.get_subjects()
+			reqs = element.get_requirement_courses()
+			if len(reqs) == 0:
+				reqs = ""
+			if len(subjects) == 0:
+				subjects = ""
+			data.append(subjects)
+			data.append(reqs)
+			map(lambda x: str(x), data)
+			print(f"{data[0]:<9}| {data[1]:<7} | {data[2]:<15} | {data[3]:<12} | {data[4]:<8} | {data[5]} | {data[6]}")
 
 	def add_course_to_student(self):
 		while True:
@@ -221,8 +232,8 @@ class Interface:
 			filtered_courses = list(filter(in_program, selected_courses))
 			selected_courses = filtered_courses
 		courses_dict = {}
-		print("\t-----ALL COURSES------")
-		print("\tCourse | Credits")
+		print("-----ALL COURSES------")
+		print("Course | Credits")
 		for element in selected_courses:
 			element.print_course_oneliner()
 			courses_dict[element.id] = element
@@ -270,7 +281,6 @@ class Interface:
 		for program in programs:
 			print(f"Program {program.id}", end=" | ")
 			print(f"Credits {program.credits}")
-		print("------------------------------------------------")
 
 	def filter_subjects(self):
 		while True:

@@ -21,10 +21,12 @@ class Course:
 		self.requirement_courses = _rc if _rc else []
 
 	def print_course_oneliner(self):
-		print(f"\t{self.id} \t {self.credits}")
+		print(f"{self.id} \t {self.credits}")
 
 	def __str__(self):
-		out = f"\t\t{self.id}\t {self.credits} \t\t{self.education_level}\t {self.study_period} \t{self.teaching_language}\t\t"
+		out = f"CourseID: {self.id}\nCredits:{self.credits} \nEducation Level:{self.education_level} \nStudy Period:{self.study_period} \nTeaching Language:{self.teaching_language}"
+		if len(self.subjects) != 0:
+			out += "\nSubjects: "
 		for item in self.subjects:
 			if isinstance(item, tuple) and len(item) == 2:
 				first, second = item
@@ -35,6 +37,7 @@ class Course:
 		out += "\t"
 
 		if self.requirement_courses:
+			out += "\nRequiement Courses: "
 			for course in self.requirement_courses:
 				out += course
 

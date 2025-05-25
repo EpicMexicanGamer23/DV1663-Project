@@ -98,12 +98,26 @@ def get_programs():
 	return program_list
 
 
+def get_program_courses(programs: list[int]) -> list[str]:
+	cursor = cvars.conn.cursor()
+	courses = []
+	for program in programs:
+		cursor.execute("SELECT * FROM ProgramCourses WHERE ProgramID = %s", (program,))
+		courses += cursor.fetchall()
+	course_list = []
+	for course in courses:
+		course_list.append(course[1])
+	cursor.close()
+	return course_list
+
+
 def add_to_student_enrollment(studentID, courseID):
 	cursor = cvars.conn.cursor()
 	cursor.execute(
 		"""INSERT INTO studentenrollment(CourseID, studentID) VALUES(%s, %s)""",
 		(courseID, studentID),
 	)
+	cursor.callproc("req_insert_courses", (courseID, studentID))
 	cvars.conn.commit()
 	cursor.close()
 
@@ -116,3 +130,10 @@ def remove_from_student_enrollment(student_id, course_id):
 	)
 	cvars.conn.commit()
 	cursor.close()
+
+
+def set_student_program(programID, studentID):
+	cursor = cvars.conn.cursor()
+	cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (programID, studentID))
+	cursor.close()
+	cvars.conn.commit()

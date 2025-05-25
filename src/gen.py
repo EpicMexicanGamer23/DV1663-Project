@@ -113,6 +113,12 @@ def generate_program() -> "Program":
 	extra_course = create_fc_course()
 	extra_course.credits = credits_left
 	fc_courses.append(extra_course)
+
+	# Add the course to the advanced course as a requirement
+	req_courses = sc_courses[0].get_requirement_courses()
+	req_courses.append(extra_course)
+	sc_courses[0].set_requirement_courses(req_courses)  # Add the requirement course to the course
+
 	new_program = Program((next(prog_gen), program_credits))
 	new_program.set_course_list(fc_courses + sc_courses)
 	return new_program

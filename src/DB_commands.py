@@ -111,3 +111,10 @@ def remove_from_student_enrollment(student_id, course_id):
 	)
 	cvars.conn.commit()
 	cursor.close()
+
+
+def set_student_program(programID, studentID):
+	cursor = cvars.conn.cursor()
+	cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (programID, studentID))
+	cursor.close()
+	cvars.conn.commit()

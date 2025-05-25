@@ -196,9 +196,6 @@ class Interface:
 			return True
 		return False
 
-	def __helper_filter_program__(self, course: "Course"):
-		pass
-
 	def view_all_courses(self):
 		selected_courses: list["Course"] = db_commands.get_courses(self.current_student_id)
 		if len(self.f_subjects) != 0:
@@ -224,8 +221,8 @@ class Interface:
 			if user_input.lower() == "q":
 				break
 
-			elif user_input in courses_dict.keys():
-				print(courses_dict[user_input])
+			elif user_input.upper() in courses_dict.keys():
+				print(courses_dict[user_input.upper()])
 
 	def add_program_to_student(self):
 		programs: list["Program"] = db_commands.get_programs()
@@ -240,10 +237,8 @@ class Interface:
 				valid_program = True
 			else:
 				print(f"There is no program {user_input}")
-		cursor = cvars.conn.cursor()
-		cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (int(user_input), self.current_student_id))
-		cvars.conn.commit()
-		cursor.close()
+				continue
+		db_commands.set_student_program(int(user_input), self.current_student_id)
 		return
 
 	def remove_program_from_student(self):
@@ -255,10 +250,7 @@ class Interface:
 			elif choice == "n":
 				break
 		if choice == "y":
-			cursor = cvars.conn.cursor()
-			cursor.execute("UPDATE Students SET ProgramID = %s WHERE StudentID = %s", (None, self.current_student_id))
-			cursor.close()
-			cvars.conn.commit()
+			db_commands.set_student_program(None, self.current_student_id)
 		return
 
 	def view_all_programs(self):

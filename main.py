@@ -48,7 +48,7 @@ def init_tables():
 
 	table_courses = """CREATE TABLE IF NOT EXISTS `Courses` (
 		CourseID VARCHAR(10) NOT NULL,
-		ETCSCredits INT NOT NULL,
+		ECTSCredits INT NOT NULL,
 		EducationLevel VARCHAR(20) NOT NULL,
 		StudyPeriod INT NOT NULL,
 		TeachingLanguage VARCHAR(100) NOT NULL,
